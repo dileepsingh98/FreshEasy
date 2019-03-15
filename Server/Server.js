@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 const port = process.env.PORT;
 
+console.log('Ok');
 
 const indexRouter = require('./routes/index');
 var app = express();
