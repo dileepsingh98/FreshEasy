@@ -21,14 +21,15 @@ var storage =   multer.diskStorage({
  var upload = multer({storage: storage},{fileFilter:function(req, file, callback){
     var ext = path.extname(file.originalname);
     if(ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg') {
-            return callback(new Error('Only images are allowed'))
+            return callback(new Error('Only images are allowed'));
     }
-    callback(null, true)
+    callback(null, true);
  }}).single('avatar');
 
 /********User Register API******************/
 module.exports.addUser = function(req,res){
-    var body = _.pick(req.body, ['mobile_no', 'country_code','email']);
+   
+    var body = _.pick(req.body, ['mobile_no', 'country_code','email','name','password']);
     var user = new User(body);
     user.save().then(() => {
 
@@ -36,9 +37,9 @@ module.exports.addUser = function(req,res){
 
     }).then((token) => {
       user.saveOtp();
-      res.header('x-auth', token).send(user);
+      res.header('x-auth', token).send({Status:200,message:'User added successfully',data:user});
     }).catch((e) => {
-      //console.log(e.code);
+      
       if(e.code == '11000'){
         res.status(200).send({Status:0,message:'Email or mobile number already in used',data:{}});
       }else{
@@ -63,22 +64,36 @@ module.exports.loginUser = (req,res)=>{
 
 /**********Verify OTP API******************/
 module.exports.verifyotp = (req,res) =>{
+
   var body = _.pick(req.body, ['otp']);
+
   userOtp = body.otp;
+
   systemOtp = req.user.otp;
+
   if(userOtp != systemOtp){
+
     res.status(200).send({Status:200,message:'Otp does not match',data:{}});
+
   }else{
+
     body.is_mobile_verify = 1;
+
     id = req.user._id;
+
     User.findOneAndUpdate({_id:id}, {$set: body}, {new: true,fields:{}}).then((user) => {
+
       if (!user) {
         return res.status(404).send();
       }
      var token = req.headers['x-auth'];
+
      res.header('x-auth', token).send({Status:200,message:'Otp match successfully',data:user});
+
     }).catch((e) => {
+
       res.status(400).send();
+      
     });
   }
 }
@@ -90,9 +105,6 @@ module.exports.verifyotp = (req,res) =>{
  * @type {[type]}
  */
 module.exports.getUserInformation = (req,res) =>{
-
-    console.log('test hello');
-    console.log(req);
     res.send(req.user);
 
 }
@@ -123,8 +135,7 @@ module.exports.updateUserInformation = (req,res) =>{
 
   var body = _.pick(req.body, ['name', 'email','homeaddress','workaddress']);
   var token = req.headers['x-auth'];
-  //user = this;
-  //req.user
+  
   User.findById(req.user.id, function (err, user) {
     if (!user) {
         return res.send({Status:0,message:'User not found',data:{}});
@@ -136,7 +147,7 @@ module.exports.updateUserInformation = (req,res) =>{
      if(!name){
        return res.send({Status:0,message:'User name is missing',data:{}});
      }
-    // console.log(homeaddress);
+  
      user.name = name;
      user.address.Home = homeaddress;
      user.address.Work = workaddress;
@@ -144,7 +155,7 @@ module.exports.updateUserInformation = (req,res) =>{
        return res.send({Status:200,message:'Profile updated successfully',data:user})
      }).catch((e) => {
        res.status(400).send(e);
-     })
+     });
 
   });
 }
@@ -164,11 +175,11 @@ module.exports.uploadProfile = (req,res)=>{
 
      return res.send({Status:0,message:'Invalid file',data:{}})
    }
-   //console.log();
+
    user = req.user;
    user.avatar = req.file.filename;
    user.save();
-   return res.send({Status:200,message:'Profile pic upload successfully',data:{}})
+   return res.send({Status:200,message:'Profile pic upload successfully',data:{}});
 });
 }
 

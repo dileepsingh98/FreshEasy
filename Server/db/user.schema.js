@@ -18,10 +18,11 @@ var UserSchema = new Schema({
     },
     email: {
       type: String,
+      unique: [true, 'There’s already an account with this email. Please sign in'],
       required: [true, 'User email required'],
       trim: true,
       minlength: 1,
-      unique: true,
+      lowercase:true,
       default:'',
        validate: {
          validator: validator.isEmail,
@@ -34,7 +35,13 @@ var UserSchema = new Schema({
     },
    password: {
       type: String,
+      required: [true, 'Please enter the password'],
       minlength: 6
+    },
+    country_code:{
+      type: String,
+      required: [true, 'Please select the country code'],
+      minlength: 1,
     },
     mobile_no:{
       type: String,
